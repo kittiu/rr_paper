@@ -60,6 +60,8 @@ class ProductTemplate(models.Model):
                     'layer5', 'layer6', 'layer7', 'layer8')
     def _check_partner_layers(self):
         for rec in self:
+            if not rec.sale_ok:
+                continue
             product = self.search([('partner_id', '=', rec.partner_id.id),
                                    ('layer1', '=', rec.layer1),
                                    ('layer2', '=', rec.layer2),
