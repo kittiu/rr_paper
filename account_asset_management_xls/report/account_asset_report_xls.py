@@ -95,26 +95,32 @@ class AssetReportXls(report_xls):
         # XLS Template
         self.acquisition_template = {
             'account': {
-                'header': [1, 20, 'text', _render("_('Account')")],
+                'header': [1, 20, 'text', _render("_('รหัส')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'text',
-                    _render("asset.profile_id.account_asset_id.code")],
+                    _render("asset.number")],
                 'totals': [
-                    1, 0, 'text', _render("_('Totals')"),
+                    1, 0, 'text', _render("_('รวม')"),
                     None, self.rt_cell_style]},
             'name': {
-                'header': [1, 40, 'text', _render("_('Name')")],
+                'header': [1, 40, 'text', _render("_('ชื่อสินทรัพย์')")],
                 'asset_view': [1, 0, 'text', _render("asset.name")],
                 'asset': [1, 0, 'text', _render("asset.name or ''")],
                 'totals': [1, 0, 'text', None]},
+            'operating_unit_id': {
+                'header': [1, 20, 'text', _render("_('แผนก')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render(
+                    "asset.operating_unit_id.code or '-'")],
+                'totals': [1, 0, 'text', None]},
             'code': {
-                'header': [1, 20, 'text', _render("_('Reference')")],
+                'header': [1, 20, 'text', _render("_('เอกสารอ้างอิง')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [1, 0, 'text', _render("asset.code or ''")],
                 'totals': [1, 0, 'text', None]},
             'date_start': {
-                'header': [1, 20, 'text', _render("_('Asset Start Date')")],
+                'header': [1, 20, 'text', _render("_('วันที่ซื้อหรือได้มา')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'date',
@@ -125,20 +131,20 @@ class AssetReportXls(report_xls):
                 'totals': [1, 0, 'text', None]},
             'depreciation_base': {
                 'header': [
-                    1, 18, 'text', _render("_('Depreciation Base')"),
+                    1, 18, 'text', _render("_('ราคาทรัพย์สินที่ซื้อหรือได้มา')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
                     1, 0, 'number', None,
                     _render("asset_formula"), self.av_cell_style_decimal],
                 'asset': [
-                    1, 0, 'number', _render("asset.depreciation_base"),
+                    1, 0, 'number', _render("asset.purchase_value"),
                     None, self.an_cell_style_decimal],
                 'totals': [
                     1, 0, 'number', None, _render("asset_total_formula"),
                     self.rt_cell_style_decimal]},
             'salvage_value': {
                 'header': [
-                    1, 18, 'text', _render("_('Salvage Value')"),
+                    1, 18, 'text', _render("_('ราคาซาก')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
                     1, 0, 'number', None, _render("salvage_formula"),
@@ -153,26 +159,21 @@ class AssetReportXls(report_xls):
 
         self.active_template = {
             'account': {
-                'header': [1, 20, 'text', _render("_('Account')")],
+                'header': [1, 20, 'text', _render("_('รหัส')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'text',
-                    _render("asset.profile_id.account_asset_id.code")],
+                    _render("asset.number")],
                 'totals': [
-                    1, 0, 'text', _render("_('Totals')"),
+                    1, 0, 'text', _render("_('รวม')"),
                     None, self.rt_cell_style]},
             'name': {
-                'header': [1, 40, 'text', _render("_('Name')")],
+                'header': [1, 40, 'text', _render("_('ชื่อสินทรัพย์')")],
                 'asset_view': [1, 0, 'text', _render("asset.name")],
                 'asset': [1, 0, 'text', _render("asset.name or ''")],
                 'totals': [1, 0, 'text', None]},
-            'code': {
-                'header': [1, 20, 'text', _render("_('Reference')")],
-                'asset_view': [1, 0, 'text', None],
-                'asset': [1, 0, 'text', _render("asset.code or ''")],
-                'totals': [1, 0, 'text', None]},
-            'date_start': {
-                'header': [1, 20, 'text', _render("_('Asset Start Date')")],
+            'date_purchase': {
+                'header': [1, 20, 'text', _render("_('วันที่ซื้อหรือได้มา')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'date',
@@ -181,22 +182,91 @@ class AssetReportXls(report_xls):
                             "or None"),
                     None, self.an_cell_style_date],
                 'totals': [1, 0, 'text', None]},
-            'depreciation_base': {
+            'date_start': {
+                'header': [1, 20, 'text', _render("_('วันที่เริ่มคำนวณค่าเสื่อม')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [
+                    1, 0, 'date',
+                    _render("asset.date_start and "
+                            "datetime.strptime(asset.date_start,'%Y-%m-%d') "
+                            "or None"),
+                    None, self.an_cell_style_date],
+                'totals': [1, 0, 'text', None]},
+            'purchase_value': {
                 'header': [
-                    1, 18, 'text', _render("_('Depreciation Base')"),
+                    1, 18, 'text', _render("_('ราคาทรัพย์สินที่ซื้อหรือได้มา')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
-                    1, 0, 'number', None,
-                    _render("asset_formula"), self.av_cell_style_decimal],
+                    1, 0, 'number', None, _render("purchase_formula"),
+                    self.av_cell_style_decimal],
                 'asset': [
-                    1, 0, 'number', _render("asset.depreciation_base"),
+                    1, 0, 'number', _render("asset.purchase_value"),
                     None, self.an_cell_style_decimal],
                 'totals': [
-                    1, 0, 'number', None, _render("asset_total_formula"),
+                    1, 0, 'number', None, _render("purchase_total_formula"),
                     self.rt_cell_style_decimal]},
+            'asset_value_previous': {
+                'header': [
+                    1, 22, 'text', _render("_('มูลค่าต้นทุนในวันสุดท้ายของรอบระยะบัญชีก่อน')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("asset_value_previous_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.asset_value_previous"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("asset_value_previous_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'remaining_value': {
+                'header': [
+                    1, 18, 'text', _render("_('มูลค่าต้นทุนหลังจากค่าเสื่อมราคาแล้วจนถึงปัจจุบัน')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("remaining_value_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.remaining_value"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("remaining_value_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'percent': {
+                'header': [
+                    1, 18, 'text', _render("_('อัตราร้อยละ')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [
+                    1, 0, 'number', _render("100.0 / asset.method_number"),
+                    None, self.an_cell_style_decimal],
+                'totals': [1, 0, 'text', None]},
+            'operating_unit_id': {
+                'header': [1, 20, 'text', _render("_('แผนก')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render(
+                    "asset.operating_unit_id.code or '-'")],
+                'totals': [1, 0, 'text', None]},
+            'code': {
+                'header': [1, 20, 'text', _render("_('เอกสารอ้างอิง')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render("asset.code or ''")],
+                'totals': [1, 0, 'text', None]},
+            # 'depreciation_base': {
+            #     'header': [
+            #         1, 18, 'text', _render("_('Depreciation Base')"),
+            #         None, self.rh_cell_style_right],
+            #     'asset_view': [
+            #         1, 0, 'number', None,
+            #         _render("asset_formula"), self.av_cell_style_decimal],
+            #     'asset': [
+            #         1, 0, 'number', _render("asset.depreciation_base"),
+            #         None, self.an_cell_style_decimal],
+            #     'totals': [
+            #         1, 0, 'number', None, _render("asset_total_formula"),
+            #         self.rt_cell_style_decimal]},
             'salvage_value': {
                 'header': [
-                    1, 18, 'text', _render("_('Salvage Value')"),
+                    1, 18, 'text', _render("_('ราคาซาก')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
                     1, 0, 'number', None, _render("salvage_formula"),
@@ -207,107 +277,142 @@ class AssetReportXls(report_xls):
                 'totals': [
                     1, 0, 'number', None, _render("salvage_total_formula"),
                     self.rt_cell_style_decimal]},
-            'fy_start_value': {
+            'asset_line_amount': {
                 'header': [
-                    1, 18, 'text', _render("_('FY Start Value')"),
+                    1, 22, 'text', _render("_('ค่าเสื่อมราคาที่หักในรอบระยะเวลาบัญชีนี้')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
-                    1, 0, 'number', None, _render("fy_start_formula"),
+                    1, 0, 'number', None, _render("asset_line_amount_formula"),
                     self.av_cell_style_decimal],
                 'asset': [
-                    1, 0, 'number', _render("asset.fy_start_value"),
+                    1, 0, 'number', _render("asset.asset_line_amount"),
                     None, self.an_cell_style_decimal],
                 'totals': [
-                    1, 0, 'number', None, _render("fy_start_total_formula"),
+                    1, 0, 'number', None, _render("asset_line_amount_total_formula"),
                     self.rt_cell_style_decimal]},
-            'fy_depr': {
+            'depreciated_value': {
                 'header': [
-                    1, 18, 'text', _render("_('FY Depreciation')"),
+                    1, 18, 'text', _render("_('ค่าเสื่อมราคาสะสมจนถึงปัจจุบัน')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
-                    1, 0, 'number', None, _render("fy_diff_formula"),
+                    1, 0, 'number', None, _render("depreciated_value_formula"),
                     self.av_cell_style_decimal],
                 'asset': [
-                    1, 0, 'number', None, _render("fy_diff_formula"),
-                    self.an_cell_style_decimal],
-                'totals': [
-                    1, 0, 'number', None, _render("fy_diff_formula"),
-                    self.rt_cell_style_decimal]},
-            'fy_end_value': {
-                'header': [
-                    1, 18, 'text', _render("_('FY End Value')"),
-                    None, self.rh_cell_style_right],
-                'asset_view': [
-                    1, 0, 'number', None, _render("fy_end_formula"),
-                    self.av_cell_style_decimal],
-                'asset': [
-                    1, 0, 'number', _render("asset.fy_end_value"),
+                    1, 0, 'number', _render("asset.depreciated_value"),
                     None, self.an_cell_style_decimal],
                 'totals': [
-                    1, 0, 'number', None, _render("fy_end_total_formula"),
+                    1, 0, 'number', None, _render("depreciated_value_total_formula"),
                     self.rt_cell_style_decimal]},
-            'fy_end_depr': {
+            # 'fy_depr': {
+            #     'header': [
+            #         1, 18, 'text', _render("_('FY Depreciation')"),
+            #         None, self.rh_cell_style_right],
+            #     'asset_view': [
+            #         1, 0, 'number', None, _render("fy_diff_formula"),
+            #         self.av_cell_style_decimal],
+            #     'asset': [
+            #         1, 0, 'number', None, _render("fy_diff_formula"),
+            #         self.an_cell_style_decimal],
+            #     'totals': [
+            #         1, 0, 'number', None, _render("fy_diff_formula"),
+            #         self.rt_cell_style_decimal]},
+            # 'fy_end_value': {
+            #     'header': [
+            #         1, 18, 'text', _render("_('FY End Value')"),
+            #         None, self.rh_cell_style_right],
+            #     'asset_view': [
+            #         1, 0, 'number', None, _render("fy_end_formula"),
+            #         self.av_cell_style_decimal],
+            #     'asset': [
+            #         1, 0, 'number', _render("asset.fy_end_value"),
+            #         None, self.an_cell_style_decimal],
+            #     'totals': [
+            #         1, 0, 'number', None, _render("fy_end_total_formula"),
+            #         self.rt_cell_style_decimal]},
+            # 'fy_end_depr': {
+            #     'header': [
+            #         1, 18, 'text', _render("_('Tot. Depreciation')"),
+            #         None, self.rh_cell_style_right],
+            #     'asset_view': [
+            #         1, 0, 'number', None, _render("total_depr_formula"),
+            #         self.av_cell_style_decimal],
+            #     'asset': [
+            #         1, 0, 'number', None, _render("total_depr_formula"),
+            #         self.an_cell_style_decimal],
+            #     'totals': [
+            #         1, 0, 'number', None, _render("total_depr_formula"),
+            #         self.rt_cell_style_decimal]},
+            # 'method': {
+            #     'header': [
+            #         1, 20, 'text', _render("_('Comput. Method')"),
+            #         None, self.rh_cell_style_center],
+            #     'asset_view': [1, 0, 'text', None],
+            #     'asset': [
+            #         1, 0, 'text', _render("asset.method or ''"),
+            #         None, self.an_cell_style_center],
+            #     'totals': [1, 0, 'text', None]},
+            # 'method_number': {
+            #     'header': [
+            #         1, 20, 'text', _render("_('Number of Years')"),
+            #         None, self.rh_cell_style_center],
+            #     'asset_view': [1, 0, 'text', None],
+            #     'asset': [
+            #         1, 0, 'number', _render("asset.method_number"),
+            #         None, self.an_cell_style_center],
+            #     'totals': [1, 0, 'text', None]},
+            # 'prorata': {
+            #     'header': [
+            #         1, 20, 'text', _render("_('Prorata Temporis')"),
+            #         None, self.rh_cell_style_center],
+            #     'asset_view': [1, 0, 'text', None],
+            #     'asset': [1, 0, 'bool', _render("asset.prorata")],
+            #     'totals': [1, 0, 'text', None]},
+            'note': {
                 'header': [
-                    1, 18, 'text', _render("_('Tot. Depreciation')"),
-                    None, self.rh_cell_style_right],
-                'asset_view': [
-                    1, 0, 'number', None, _render("total_depr_formula"),
-                    self.av_cell_style_decimal],
-                'asset': [
-                    1, 0, 'number', None, _render("total_depr_formula"),
-                    self.an_cell_style_decimal],
-                'totals': [
-                    1, 0, 'number', None, _render("total_depr_formula"),
-                    self.rt_cell_style_decimal]},
-            'method': {
-                'header': [
-                    1, 20, 'text', _render("_('Comput. Method')"),
+                    1, 20, 'text', _render("_('หมายเหตุ')"),
                     None, self.rh_cell_style_center],
                 'asset_view': [1, 0, 'text', None],
-                'asset': [
-                    1, 0, 'text', _render("asset.method or ''"),
-                    None, self.an_cell_style_center],
-                'totals': [1, 0, 'text', None]},
-            'method_number': {
-                'header': [
-                    1, 20, 'text', _render("_('Number of Years')"),
-                    None, self.rh_cell_style_center],
-                'asset_view': [1, 0, 'text', None],
-                'asset': [
-                    1, 0, 'number', _render("asset.method_number"),
-                    None, self.an_cell_style_center],
-                'totals': [1, 0, 'text', None]},
-            'prorata': {
-                'header': [
-                    1, 20, 'text', _render("_('Prorata Temporis')"),
-                    None, self.rh_cell_style_center],
-                'asset_view': [1, 0, 'text', None],
-                'asset': [1, 0, 'bool', _render("asset.prorata")],
+                'asset': [1, 0, 'text', _render("asset.note")],
                 'totals': [1, 0, 'text', None]},
         }
 
         self.removal_template = {
             'account': {
-                'header': [1, 20, 'text', _render("_('Account')")],
+                'header': [1, 20, 'text', _render("_('รหัส')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'text',
-                    _render("asset.profile_id.account_asset_id.code")],
+                    _render("asset.number")],
                 'totals': [
-                    1, 0, 'text', _render("_('Totals')"),
+                    1, 0, 'text', _render("_('รวม')"),
                     None, self.rt_cell_style]},
             'name': {
-                'header': [1, 40, 'text', _render("_('Name')")],
+                'header': [1, 40, 'text', _render("_('ชื่อสินทรัพย์')")],
                 'asset_view': [1, 0, 'text', _render("asset.name")],
                 'asset': [1, 0, 'text', _render("asset.name or ''")],
                 'totals': [1, 0, 'text', None]},
-            'code': {
-                'header': [1, 20, 'text', _render("_('Reference')")],
+            'date_purchase': {
+                'header': [1, 20, 'text', _render("_('วันที่ซื้อหรือได้มา')")],
                 'asset_view': [1, 0, 'text', None],
-                'asset': [1, 0, 'text', _render("asset.code or ''")],
+                'asset': [
+                    1, 0, 'date',
+                    _render("asset.date_start and "
+                            "datetime.strptime(asset.date_start,'%Y-%m-%d') "
+                            "or None"),
+                    None, self.an_cell_style_date],
+                'totals': [1, 0, 'text', None]},
+            'date_start': {
+                'header': [1, 20, 'text', _render("_('วันที่เริ่มคำนวณค่าเสื่อม')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [
+                    1, 0, 'date',
+                    _render("asset.date_start and "
+                            "datetime.strptime(asset.date_start,'%Y-%m-%d') "
+                            "or None"),
+                    None, self.an_cell_style_date],
                 'totals': [1, 0, 'text', None]},
             'date_remove': {
-                'header': [1, 20, 'text', _render("_('Asset Removal Date')")],
+                'header': [1, 20, 'text', _render("_('วันที่ตัดจำหน่ายสินทรัพย์')")],
                 'asset_view': [1, 0, 'text', None],
                 'asset': [
                     1, 0, 'date',
@@ -316,9 +421,49 @@ class AssetReportXls(report_xls):
                             "or None"),
                     None, self.an_cell_style_date],
                 'totals': [1, 0, 'text', None]},
+            'purchase_value': {
+                'header': [
+                    1, 18, 'text', _render("_('ราคาทรัพย์สินที่ซื้อหรือได้มา')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("purchase_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.purchase_value"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("purchase_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'percent': {
+                'header': [
+                    1, 18, 'text', _render("_('อัตราร้อยละ')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [
+                    1, 0, 'number', _render("100.0 / asset.method_number"),
+                    None, self.an_cell_style_decimal],
+                'totals': [1, 0, 'text', None]},
+            'operating_unit_id': {
+                'header': [1, 20, 'text', _render("_('แผนก')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render(
+                    "asset.operating_unit_id.code or '-'")],
+                'totals': [1, 0, 'text', None]},
+            'code': {
+                'header': [1, 20, 'text', _render("_('เอกสารอ้างอิง')")],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render("asset.code or ''")],
+                'totals': [1, 0, 'text', None]},
+            'note': {
+                'header': [
+                    1, 20, 'text', _render("_('หมายเหตุ')"),
+                    None, self.rh_cell_style_center],
+                'asset_view': [1, 0, 'text', None],
+                'asset': [1, 0, 'text', _render("asset.note")],
+                'totals': [1, 0, 'text', None]},
             'depreciation_base': {
                 'header': [
-                    1, 18, 'text', _render("_('Depreciation Base')"),
+                    1, 18, 'text', _render("_('ราคาทรัพย์สินที่ซื้อหรือได้มา')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
                     1, 0, 'number', None,
@@ -331,7 +476,7 @@ class AssetReportXls(report_xls):
                     self.rt_cell_style_decimal]},
             'salvage_value': {
                 'header': [
-                    1, 18, 'text', _render("_('Salvage Value')"),
+                    1, 18, 'text', _render("_('ราคาซาก')"),
                     None, self.rh_cell_style_right],
                 'asset_view': [
                     1, 0, 'number', None, _render("salvage_formula"),
@@ -341,6 +486,58 @@ class AssetReportXls(report_xls):
                     None, self.an_cell_style_decimal],
                 'totals': [
                     1, 0, 'number', None, _render("salvage_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'asset_value_previous': {
+                'header': [
+                    1, 22, 'text', _render("_('มูลค่าต้นทุนในวันสุดท้ายของรอบระยะบัญชีก่อน')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("asset_value_previous_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.asset_value_previous"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("asset_value_previous_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'remaining_value': {
+                'header': [
+                    1, 18, 'text', _render("_('มูลค่าต้นทุนหลังจากค่าเสื่อมราคาแล้วจนถึงปัจจุบัน')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("remaining_value_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.remaining_value"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("remaining_value_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'asset_line_amount': {
+                'header': [
+                    1, 22, 'text', _render("_('ค่าเสื่อมราคาที่หักในรอบระยะเวลาบัญชีนี้')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("asset_line_amount_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.asset_line_amount"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("asset_line_amount_total_formula"),
+                    self.rt_cell_style_decimal]},
+            'depreciated_value': {
+                'header': [
+                    1, 18, 'text', _render("_('ค่าเสื่อมราคาสะสมจนถึงปัจจุบัน')"),
+                    None, self.rh_cell_style_right],
+                'asset_view': [
+                    1, 0, 'number', None, _render("depreciated_value_formula"),
+                    self.av_cell_style_decimal],
+                'asset': [
+                    1, 0, 'number', _render("asset.depreciated_value"),
+                    None, self.an_cell_style_decimal],
+                'totals': [
+                    1, 0, 'number', None, _render("depreciated_value_total_formula"),
                     self.rt_cell_style_decimal]},
         }
 
@@ -367,15 +564,16 @@ class AssetReportXls(report_xls):
                 suffix = '-DSP'
         return prefix + suffix
 
-    def _report_title(self, ws, _p, row_pos, _xs, title):
-        cell_style = xlwt.easyxf(_xs['xls_title'])
+    def _report_title(self, ws, _p, row_pos, _xs, title, offset=0, merge=1):
+        cell_style = xlwt.easyxf(
+            _xs['center'] + 'font: color blue, bold false, height 220;')
         c_specs = [
-            ('report_name', 1, 0, 'text', title),
+            ('report_name', merge, 0, 'text', title),
         ]
         row_data = self.xls_row_template(c_specs, [x[0] for x in c_specs])
         row_pos = self.xls_write_row(
             ws, row_pos, row_data, row_style=cell_style)
-        return row_pos + 1
+        return row_pos + offset
 
     def _empty_report(self, ws, _p, row_pos, _xs, report):
         cell_style = xlwt.easyxf(_xs['bold'])
@@ -422,11 +620,21 @@ class AssetReportXls(report_xls):
                 self._view_add(parent, assets)
         assets.append(acq)
 
+    def _get_buddha_datetime(self, date):
+        date = date.split('-')
+        date[0] = str(int(date[0]) + 543)  # year + 543
+        date.reverse()
+        return '/'.join(date)
+
     def _acquisition_report(self, _p, _xs, data, objects, wb):
         cr = self.cr
         uid = self.uid
         context = self.context
-        fy = self.fiscalyear
+        if data['period_id']:  # fy will be peroid instead.
+            fy = self.pool['account.period'].browse(
+                cr, uid, data['period_id'], context=context)
+        else:
+            fy = self.fiscalyear
         wl_acq = _p.wanted_list_acquisition
         template = self.acquisition_template
         asset_obj = self.pool['account.asset']
@@ -442,7 +650,19 @@ class AssetReportXls(report_xls):
         row_pos = 0
         ws.header_str = self.xls_headers['standard']
         ws.footer_str = self.xls_footers['standard']
-        row_pos = self._report_title(ws, _p, row_pos, _xs, title)
+
+        start_date = self._get_buddha_datetime(fy.date_start)
+        stop_date = self._get_buddha_datetime(fy.date_stop)
+        company_id = self.pool['res.users'].browse(
+            cr, uid, uid, context=context).company_id
+        titles = [
+            # title,
+            company_id.name,
+            'รายงานตารางทรัพย์สินที่ซื้อหรือได้มา',
+            'ตั้งแต่วันที่ ' + start_date + ' ถึง ' + stop_date,
+        ]
+        for title in titles:
+            row_pos = self._report_title(ws, _p, row_pos, _xs, title, merge=7)
 
         cr.execute(
             "SELECT id FROM account_asset "
@@ -543,7 +763,11 @@ class AssetReportXls(report_xls):
         cr = self.cr
         uid = self.uid
         context = self.context
-        fy = self.fiscalyear
+        if data['period_id']:  # fy will be peroid instead.
+            fy = self.pool['account.period'].browse(
+                cr, uid, data['period_id'], context=context)
+        else:
+            fy = self.fiscalyear
         wl_act = _p.wanted_list_active
         template = self.active_template
         asset_obj = self.pool['account.asset']
@@ -559,7 +783,18 @@ class AssetReportXls(report_xls):
         row_pos = 0
         ws.header_str = self.xls_headers['standard']
         ws.footer_str = self.xls_footers['standard']
-        row_pos = self._report_title(ws, _p, row_pos, _xs, title)
+        start_date = self._get_buddha_datetime(fy.date_start)
+        stop_date = self._get_buddha_datetime(fy.date_stop)
+        company_id = self.pool['res.users'].browse(
+            cr, uid, uid, context=context).company_id
+        titles = [
+            # title,
+            company_id.name,
+            'รายงานตารางค่าเสื่อมราคาสะสม (แนบ ภงด.50)',
+            'ตั้งแต่วันที่ ' + start_date + ' ถึง ' + stop_date,
+        ]
+        for title in titles:
+            row_pos = self._report_title(ws, _p, row_pos, _xs, title, merge=14)
 
         cr.execute(
             "SELECT id FROM account_asset "
@@ -568,6 +803,20 @@ class AssetReportXls(report_xls):
             "AND id IN %s AND type = 'normal' "
             "ORDER BY date_start ASC",
             (fy.date_stop, fy.date_start, tuple(self.asset_ids))
+        )
+        act_ids = [x[0] for x in cr.fetchall()]
+
+        if not act_ids:
+            return self._empty_report(ws, _p, row_pos, _xs, 'active')
+
+        # filter only asset that run asset_line in period
+        cr.execute(
+            "SELECT asset_id FROM account_asset_line "
+            "WHERE move_check = true "
+            "AND type = 'depreciate' "
+            "AND line_date >= %s "
+            "AND asset_id in %s ",
+            (fy.date_start, tuple(act_ids))
         )
         act_ids = [x[0] for x in cr.fetchall()]
 
@@ -599,6 +848,18 @@ class AssetReportXls(report_xls):
             wl_act.index('fy_start_value')
         fy_end_value_pos = 'fy_end_value' in wl_act and \
             wl_act.index('fy_end_value')
+        purchase_value_pos = 'purchase_value' in wl_act and \
+            wl_act.index('purchase_value')
+        asset_line_amount_pos = 'asset_line_amount' in wl_act and \
+            wl_act.index('asset_line_amount')
+        value_residual_pos = 'residual_value' in wl_act and \
+            wl_act.index('residual_value')
+        asset_value_previous_pos = 'asset_value_previous' in wl_act and \
+            wl_act.index('asset_value_previous')
+        depreciated_value_pos = 'depreciated_value' in wl_act and \
+            wl_act.index('depreciated_value')
+        remaining_value_pos = 'remaining_value' in wl_act and \
+            wl_act.index('remaining_value')
 
         acts = filter(lambda x: x[0] in act_ids, self.assets)
         acts_and_parents = []
@@ -621,7 +882,7 @@ class AssetReportXls(report_xls):
 
             else:
 
-                # fy_start_value
+                # fy_start_value, depreciated_value
                 cr.execute(
                     "SELECT depreciated_value "
                     "FROM account_asset_line "
@@ -688,6 +949,32 @@ class AssetReportXls(report_xls):
                     value_depreciated = asset.depreciation_base
                 asset.fy_end_value = \
                     asset.depreciation_base - value_depreciated
+
+                # depreciation line amount
+                cr.execute(
+                    "SELECT amount, remaining_value, depreciated_value "
+                    "FROM account_asset_line "
+                    "WHERE line_date <= %s AND "
+                    "asset_id = %s AND type = 'depreciate' "
+                    "AND move_check=true "
+                    "ORDER BY line_date DESC LIMIT 1",
+                    (fy.date_stop, data[0]))
+                res = cr.fetchone()
+                if res:
+                    value_line_amount = res[0]
+                    value_line_previous = res[0] + res[1]
+                    value_line_remaining = res[1]
+                    value_line_depreciated = res[0] + res[2]
+                else:
+                    value_line_amount = asset.depreciation_base
+                    value_line_previous = \
+                        value_line_amount + asset.value_residual
+                    value_line_remaining = asset.value_residual
+                    value_line_depreciated = asset.value_depreciated
+                asset.asset_line_amount = value_line_amount
+                asset.asset_value_previous = value_line_previous
+                asset.remaining_value = value_line_remaining
+                asset.depreciated_value = value_line_depreciated
             entry['asset'] = asset
             entries.append(entry)
 
@@ -723,7 +1010,41 @@ class AssetReportXls(report_xls):
                     rowcol_to_cell(row_pos_start + x, fy_end_value_pos)
                     for x in entry['child_pos']]
                 fy_end_formula = '+'.join(fy_end_value_cells)  # noqa: disable F841, report_xls namespace trick
+                purchase_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, purchase_value_pos)
+                    for x in entry['child_pos']
+                ]
+                purchase_formula = '+'.join(purchase_value_cells)
 
+                asset_line_amount_calls = [
+                    rowcol_to_cell(row_pos_start + x, asset_line_amount_pos)
+                    for x in entry['child_pos']
+                ]
+                asset_line_amount_formula = '+'.join(asset_line_amount_calls)
+
+                value_residual_cells = [
+                    rowcol_to_cell(row_pos_start + x, value_residual_pos)
+                    for x in entry['child_pos']
+                ]
+                value_residual_formula = '+'.join(value_residual_cells)
+
+                asset_value_previous_cells = [
+                    rowcol_to_cell(row_pos_start + x, asset_value_previous_pos)
+                    for x in entry['child_pos']
+                ]
+                asset_value_previous_formula = '+'.join(asset_value_previous_cells)
+
+                depreciated_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, depreciated_value_pos)
+                    for x in entry['child_pos']
+                ]
+                depreciated_value_formula = '+'.join(depreciated_value_cells)
+
+                remaining_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, remaining_value_pos)
+                    for x in entry['child_pos']
+                ]
+                remaining_value_formula = '+'.join(remaining_value_cells)
                 c_specs = map(
                     lambda x: self.render(
                         x, template, 'asset_view'),
@@ -755,6 +1076,18 @@ class AssetReportXls(report_xls):
         depreciation_base_cell = rowcol_to_cell(row_pos, depreciation_base_pos)
         fy_diff_formula = fy_start_value_cell + '-' + fy_end_value_cell  # noqa: disable F841, report_xls namespace trick
         total_depr_formula = depreciation_base_cell + '-' + fy_end_value_cell  # noqa: disable F841, report_xls namespace trick
+        purchase_total_formula = rowcol_to_cell(row_pos_start,
+                                                purchase_value_pos)
+        asset_line_amount_total_formula = rowcol_to_cell(row_pos_start,
+                                                         asset_line_amount_pos)
+        value_residual_total_formula = rowcol_to_cell(row_pos_start,
+                                                      value_residual_pos)
+        asset_value_previous_total_formula = rowcol_to_cell(row_pos_start,
+                                                            asset_value_previous_pos)
+        depreciated_value_total_formula = rowcol_to_cell(row_pos_start,
+                                                         depreciated_value_pos)
+        remaining_value_total_formula = rowcol_to_cell(row_pos_start,
+                                                         remaining_value_pos)
 
         c_specs = map(
             lambda x: self.render(
@@ -769,7 +1102,11 @@ class AssetReportXls(report_xls):
         cr = self.cr
         uid = self.uid
         context = self.context
-        fy = self.fiscalyear
+        if data['period_id']:  # fy will be peroid instead.
+            fy = self.pool['account.period'].browse(
+                cr, uid, data['period_id'], context=context)
+        else:
+            fy = self.fiscalyear
         wl_dsp = _p.wanted_list_removal
         template = self.removal_template
         asset_obj = self.pool['account.asset']
@@ -785,7 +1122,20 @@ class AssetReportXls(report_xls):
         row_pos = 0
         ws.header_str = self.xls_headers['standard']
         ws.footer_str = self.xls_footers['standard']
-        row_pos = self._report_title(ws, _p, row_pos, _xs, title)
+
+        start_date = self._get_buddha_datetime(fy.date_start)
+        stop_date = self._get_buddha_datetime(fy.date_stop)
+
+        company_id = self.pool['res.users'].browse(
+            cr, uid, uid, context=context).company_id
+        titles = [
+            # title,
+            company_id.name,
+            'รายงานตารางค่าเสื่อมราคาสะสม (แนบ ภงด.50)',
+            'ตั้งแต่วันที่ ' + start_date + ' ถึง ' + stop_date,
+        ]
+        for title in titles:
+            row_pos = self._report_title(ws, _p, row_pos, _xs, title, merge=15)
 
         cr.execute(
             "SELECT id FROM account_asset "
@@ -819,6 +1169,16 @@ class AssetReportXls(report_xls):
             wl_dsp.index('depreciation_base')
         salvage_value_pos = 'salvage_value' in wl_dsp and \
             wl_dsp.index('salvage_value')
+        purchase_value_pos = 'purchase_value' in wl_dsp and \
+            wl_dsp.index('purchase_value')
+        asset_line_amount_pos = 'asset_line_amount' in wl_dsp and \
+            wl_dsp.index('asset_line_amount')
+        asset_value_previous_pos = 'asset_value_previous' in wl_dsp and \
+            wl_dsp.index('asset_value_previous')
+        depreciated_value_pos = 'depreciated_value' in wl_dsp and \
+            wl_dsp.index('depreciated_value')
+        remaining_value_pos = 'remaining_value' in wl_dsp and \
+            wl_dsp.index('remaining_value')
 
         dsps = filter(lambda x: x[0] in dsp_ids, self.assets)
         dsps_and_parents = []
@@ -837,6 +1197,32 @@ class AssetReportXls(report_xls):
                         cp.append(cp_i)
                     cp_i += 1
                 entry['child_pos'] = cp
+            else:
+                # depreciation line amount
+                cr.execute(
+                    "SELECT amount, remaining_value, depreciated_value "
+                    "FROM account_asset_line "
+                    "WHERE line_date <= %s AND "
+                    "asset_id = %s AND type = 'remove' "
+                    "AND move_check=true "
+                    "ORDER BY line_date DESC LIMIT 1",
+                    (fy.date_stop, data[0]))
+                res = cr.fetchone()
+                if res:
+                    value_line_amount = res[2]
+                    value_line_previous = res[0] + res[1]
+                    value_line_remaining = res[1]
+                    value_line_depreciated = asset.value_depreciated - res[0]
+                else:
+                    value_line_amount = asset.depreciation_base
+                    value_line_previous = \
+                        value_line_amount + asset.value_residual
+                    value_line_remaining = asset.value_residual
+                    value_line_depreciated = asset.value_depreciated
+                asset.asset_line_amount = value_line_amount
+                asset.asset_value_previous = value_line_previous
+                asset.remaining_value = value_line_remaining
+                asset.depreciated_value = value_line_depreciated
             entry['asset'] = asset
             entries.append(entry)
 
@@ -851,6 +1237,35 @@ class AssetReportXls(report_xls):
                     rowcol_to_cell(row_pos_start + x, salvage_value_pos)
                     for x in entry['child_pos']]
                 salvage_formula = '+'.join(salvage_value_cells)  # noqa: disable F841, report_xls namespace trick
+                purchase_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, purchase_value_pos)
+                    for x in entry['child_pos']
+                ]
+                purchase_formula = '+'.join(purchase_value_cells)
+
+                asset_line_amount_calls = [
+                    rowcol_to_cell(row_pos_start + x, asset_line_amount_pos)
+                    for x in entry['child_pos']
+                ]
+                asset_line_amount_formula = '+'.join(asset_line_amount_calls)
+
+                asset_value_previous_cells = [
+                    rowcol_to_cell(row_pos_start + x, asset_value_previous_pos)
+                    for x in entry['child_pos']
+                ]
+                asset_value_previous_formula = '+'.join(asset_value_previous_cells)
+
+                depreciated_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, depreciated_value_pos)
+                    for x in entry['child_pos']
+                ]
+                depreciated_value_formula = '+'.join(depreciated_value_cells)
+
+                remaining_value_cells = [
+                    rowcol_to_cell(row_pos_start + x, remaining_value_pos)
+                    for x in entry['child_pos']
+                ]
+                remaining_value_formula = '+'.join(remaining_value_cells)
                 c_specs = map(
                     lambda x: self.render(
                         x, template, 'asset_view'),
@@ -872,6 +1287,16 @@ class AssetReportXls(report_xls):
         asset_total_formula = rowcol_to_cell(row_pos_start, depreciation_base_pos)  # noqa: disable F841, report_xls namespace trick
         salvage_total_formula = rowcol_to_cell(row_pos_start,   # noqa: disable F841, report_xls namespace trick
                                                salvage_value_pos)
+        purchase_total_formula = rowcol_to_cell(row_pos_start,
+                                                purchase_value_pos)
+        asset_line_amount_total_formula = rowcol_to_cell(row_pos_start,
+                                                         asset_line_amount_pos)
+        asset_value_previous_total_formula = rowcol_to_cell(row_pos_start,
+                                                            asset_value_previous_pos)
+        depreciated_value_total_formula = rowcol_to_cell(row_pos_start,
+                                                         depreciated_value_pos)
+        remaining_value_total_formula = rowcol_to_cell(row_pos_start,
+                                                         remaining_value_pos)
 
         c_specs = map(
             lambda x: self.render(
@@ -883,7 +1308,6 @@ class AssetReportXls(report_xls):
             ws, row_pos, row_data, row_style=self.rt_cell_style_right)
 
     def generate_xls_report(self, _p, _xs, data, objects, wb):
-
         wl_act = _p.wanted_list_active  # noqa: disable F841, report_xls namespace trick
         wl_rem = _p.wanted_list_removal  # noqa: disable F841, report_xls namespace trick
         self.acquisition_template.update(_p.template_update_acquisition)
@@ -901,6 +1325,6 @@ class AssetReportXls(report_xls):
 
 
 AssetReportXls(
-    'report.account.asset.xls',
+    'report.account.depreciation.xls',
     'account.asset',
     parser=AssetReportXlsParser)
